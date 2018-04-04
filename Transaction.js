@@ -2,9 +2,8 @@
 
 const SHA256 = require('crypto-js/sha256');
 
-
 class Transaction {
-    
+
     constructor(data) {
         this.data = data;
         this.timestamp = this.getDate();
@@ -12,40 +11,46 @@ class Transaction {
         console.log(this.hash);
     }
 
-    getDate(){
+    getDate() {
         let timestamp = new Date();
         let dd = timestamp.getDate();
-        let mm = timestamp.getMonth()+1;
+        let mm = timestamp.getMonth() + 1;
         let yyyy = timestamp.getFullYear();
         let hh = timestamp.getHours();
+        let min = timestamp.getMinutes();
         let ss = timestamp.getSeconds();
         let ms = timestamp.getMilliseconds();
-        
-        if(dd<10)
+
+        if (dd < 10)
             dd = '0' + dd
-        
-        if(mm<10) 
+
+        if (mm < 10)
             mm = '0' + mm
 
-        if(hh<10)
+        if (hh < 10)
             hh = '0' + mm
 
-        if(ss<10)
+        if (min < 10)
+            min = '0' + min
+
+        if (ss < 10)
             ss = '0' + ss
 
-        if(ms<10)
+        if (ms < 10) {
             ms = '000' + ms;
+        }
 
-        if(ms<100)
+        else if (ms < 100) {
             ms = '00' + ms;
+        }
 
-        if(ms<1000)
+        else if (ms < 1000) {
             ms = '0' + ms;
-
-        return yyyy + '/' + mm + '/' + dd + '/' + hh + '/' + ss +'/' + ms;
+        }
+        return yyyy + '/' + mm + '/' + dd + '/' + hh + '/' + min + '/' + ss + '/' + ms;
     }
 
-    calculateHash(){
+    calculateHash() {
         return SHA256(this.timestamp + JSON.stringify(this.data)).toString();
     }
 }

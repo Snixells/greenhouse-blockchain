@@ -29,6 +29,19 @@ let businessBlockchain = new Blockchain();
     //     if(callback)
     //         console.log("EMPTY");
     // });
+
+    // DatabaseBlockchain.createGenesisBlock();
+
+    // console.log(DatabaseBlockchain.checkNumberOfUnconfirmed(result => {
+    //     console.log(result);
+    // }))
+
+    // DatabaseBlockchain.deleteTableData('blockchain', 'chain');
+
+    // DatabaseBlockchain.createGenesisBlock();
+
+    DatabaseBlockchain.sortChainByDate();
+
     
 // ueryResults = businessBlockchain.queryCarID("0007");
 // businessBlockchain.printQueryResults(queryResults);

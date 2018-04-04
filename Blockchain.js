@@ -5,26 +5,20 @@ const DatabaseBlockchain = require('./chaindb.js');
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
-        this.difficulty = 1;
         this.pendingTransactions = [];
-        this.miningReward = 10;
-        this.maxPendingTransactions = 3;
+        this.maxPendingTransactions = 2;
     }
 
-    // Creating the first (genesis) block
-    createGenesisBlock() {
-        return new Block("GenesisBlock", '');
+    createGenesisBlock(){
+        return new Block("GenesisBlock");
     }
-
     // Querying for the latest block
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
-
     }
 
     pushNewBlock(block) {
         this.chain.push(block);
-        console.log(JSON.stringify(block), null, 3);
         // DatabaseBlockchain.insertToChainDatabase(block);
     }
 
@@ -52,16 +46,13 @@ class Blockchain {
         this.pendingTransactions.push(transaction)
         let transactionNumber = this.pendingTransactions.length;
         let blockNumber = this.chain.length;
-        console.log("Added Transaction " + transactionNumber + " to Block " + blockNumber + " -> unconfirmed");
 
         // Adding unconfirmed transaction to database
-        console.log('Adding to db!!');
-        console.log(transaction);
         DatabaseBlockchain.insertToUnconfirmedDatabase(transaction);
 
         // When enough transactions, they are sent to the mine method
         if (this.pendingTransactions.length >= this.maxPendingTransactions) {
-            this.minePendingTransactions(this.pendingTransactions);
+            this.validatePendingTransactions(this.pendingTransactions);
         }
     }
 
@@ -72,7 +63,7 @@ class Blockchain {
     //     DatabaseBlockchain.getUnconfirmedDB(result => {
     //         unvalidatedTransactions = result;
     //         console.log("UNVALIDATED");
-    //         for (let i = 0; i < unvalidatedTransactions.length; i++) {
+    //         for (let i = 0; i calculateHashTransaction< unvalidatedTransactions.length; i++) {
     //             transactionsToValidate.push((new Transaction({
     //                 'oldOwner': unvalidatedTransactions[i].data.oldOwner, 'newOwner': unvalidatedTransactions[i].data.newOwner, 'make': unvalidatedTransactions[i].data.make,
     //                 'model': unvalidatedTransactions[i].data.model, 'carID': unvalidatedTransactions[i].data.carID
@@ -90,27 +81,30 @@ class Blockchain {
     //     });
 // }
 
-// Method for mining
+// // Method for mining
 
-addBlockOfValidatedTransactions(transactions){
-    let newBlock = new Block(transactions);
+// addBlockOfValidatedTransactions(transactions){
+//     let newBlock = new Block(transactions);
     
-    for (let i = 0; i <= transactions.length - 1; i++) {
-        newBlock.transactions[i].hash = newBlock.calculateHashTransaction(transactions[i]);
-    }
+//     for (let i = 0; i <= transactions.length - 1; i++) {
+//         // newBlock.transactions[i].hash = newBlock.calculateHashTransaction(transactions[i]);
+//         newBlock.transactions[i].hash = transactions[i].calculateHash();
+        
+//     }
 
-    newBlock.hash = newBlock.mineBlock(transactions, this.difficulty);
+//     newBlock.hash = newBlock.calculateHash(transactions);
 
-    this.chain.push(newBlock);
-    console.log("pushed!");
+//     this.chain.push(newBlock);
+//     console.log("pushed!");
 
-    return newBlock;
+//     return newBlock;
 
-}
+// }
 
 
-minePendingTransactions(transactions) {
+validatePendingTransactions(transactions) {
     let newBlock = new Block(transactions);
+    console.log(this.getLatestBlock());
     newBlock.previousHash = this.getLatestBlock().hash;
 
     // Generate Hashes of transactions
@@ -119,7 +113,7 @@ minePendingTransactions(transactions) {
     }
 
     // Generating Block Hash using Transaction hashes
-    newBlock.hash = newBlock.mineBlock(transactions, this.difficulty);
+    newBlock.hash = newBlock.calculateHash(transactions);
 
     this.pushNewBlock(newBlock);
 

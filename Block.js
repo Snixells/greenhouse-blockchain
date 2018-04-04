@@ -29,51 +29,44 @@ class Block {
         return SHA256(hashNumber).toString();
     }
 
-    // Including poW -> specific number of zeros at beginning of hash 
-    mineBlock(transactions, difficulty) {
-        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
-            this.nonce += 1;
-            this.hash = this.calculateHash(transactions);
-        }
-
-        console.log("Mining Block ; Hash -> " + this.hash + " After " + this.nonce + " calculations")
-
-        return this.hash;
-    }
-
-    getDate(){
+    getDate() {
         let timestamp = new Date();
         let dd = timestamp.getDate();
-        let mm = timestamp.getMonth()+1;
+        let mm = timestamp.getMonth() + 1;
         let yyyy = timestamp.getFullYear();
         let hh = timestamp.getHours();
+        let min = timestamp.getMinutes();
         let ss = timestamp.getSeconds();
         let ms = timestamp.getMilliseconds();
-        
-        if(dd<10)
+
+        if (dd < 10)
             dd = '0' + dd
-        
-        if(mm<10) 
+
+        if (mm < 10)
             mm = '0' + mm
 
-        if(hh<10)
+        if (hh < 10)
             hh = '0' + mm
 
-        if(ss<10)
+        if (min < 10)
+            min = '0' + min
+
+        if (ss < 10)
             ss = '0' + ss
 
-        if(ms<10)
+        if (ms < 10) {
             ms = '000' + ms;
+        }
 
-        if(ms<100)
+        else if (ms < 100) {
             ms = '00' + ms;
+        }
 
-        if(ms<1000)
+        else if (ms < 1000) {
             ms = '0' + ms;
-
-        return yyyy + '/' + mm + '/' + dd + '/' + hh + '/' + ss +'/' + ms;
+        }
+        return yyyy + '/' + mm + '/' + dd + '/' + hh + '/' + min + '/' + ss + '/' + ms;
     }
-
 }
 
 module.exports = Block;
