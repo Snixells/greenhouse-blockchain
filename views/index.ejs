@@ -1,0 +1,15 @@
+<h3>Chain</h3>
+<ul>
+<% blocks.forEach((block) => { %>
+    <li><%= block.value.transactions %> </li>
+        <% block.value.transactions.forEach((transaction) => { %>
+            <ul>
+                <li> <%= transaction.data.make %> </li>
+            </ul>
+        <% }) %>
+    </li>
+<% }); %>
+</ul>
+<ul>
+<%= blocks %>
+</ul>

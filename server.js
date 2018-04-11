@@ -1,11 +1,15 @@
 const express = require('express');
 const app = express();
-const couchbd = require('./couchdb.js');
+const NodeCouchDb = require('node-couchdb');
+const bodyParser = require('body-parser');
+
 
 const chainRoutes = require('./api/routes/chain_route');
 const unconfirmedRoutes = require('./api/routes/unconfirmed_route');
 
 const morgan = require('morgan');
+
+app.set('view engine', 'ejs');
 
 app.use((morgan('dev')));
 
