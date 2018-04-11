@@ -1,5 +1,6 @@
 const NodeCouchDb = require('node-couchdb');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const couch = new NodeCouchDb({
     auth: {
