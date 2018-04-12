@@ -29,6 +29,10 @@ class Block {
         return SHA256(hashNumber).toString();
     }
 
+    addTransaction(data){
+        this.transactions.push(new Transaction(data));
+    }
+
     getDate() {
         let timestamp = new Date();
         let dd = timestamp.getDate();

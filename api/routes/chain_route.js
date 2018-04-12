@@ -28,4 +28,8 @@ router.get('/', (req, res, next) => {
 
 });
 
+router.post('/newBlock', (req, res, next) => {
+
+})
+
 module.exports = router;
