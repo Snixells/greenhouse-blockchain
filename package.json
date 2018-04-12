@@ -6,6 +6,7 @@
   "dependencies": {
     "crypto-js": "^3.1.9-1",
     "express": "^4.16.3",
+    "nano": "^6.4.3",
     "nodemon": "^1.17.2"
   },
   "devDependencies": {},
