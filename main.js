@@ -1,9 +1,5 @@
-const Blockchain = require('./Blockchain.js');
 const Transaction = require('./Transaction.js');
 const Block = require('./Block.js')
-const DatabaseBlockchain = require('./chaindb.js');
-
-let businessBlockchain = new Blockchain();
 
     // businessBlockchain.addCar("1", "Tesla", "Model 3", "0001");
     // businessBlockchain.addCar("1", "BMW", "M2 Coupe", "0002");
@@ -19,9 +15,15 @@ let businessBlockchain = new Blockchain();
     // businessBlockchain.addCar("2", "Tesla", "Model 3", "0006");
 
     let newBlock = new Block();
-    // newBlock.addTransaction("hello");
+    newBlock.addTransaction("hello");
+    newBlock.addTransaction("Test");
 
-    // console.log(newBlock);
+    newBlock.addTransaction("hello");
+    newBlock.addTransaction("Test");
+
+    newBlock.calculateHash();
+
+    console.log(newBlock);
 
 
     // DatabaseBlockchain.getUnconfirmedDB(callback => {
@@ -44,8 +46,6 @@ let businessBlockchain = new Blockchain();
     // DatabaseBlockchain.deleteTableData('blockchain', 'chain');
 
     // DatabaseBlockchain.createGenesisBlock();
-
-    DatabaseBlockchain.sortChainByDate();
 
     
 // ueryResults = businessBlockchain.queryCarID("0007");

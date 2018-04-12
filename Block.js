@@ -5,9 +5,9 @@ const Transaction = require('./Transaction');
 
 
 class Block {
-    constructor(transactions, previousHash = '') {
+    constructor(previousHash = '') {
         this.timestamp = this.getDate();
-        this.transactions = transactions;
+        this.transactions = [];
         this.previousHash = previousHash;
         this.hash = '';
         this.nonce = 0;
@@ -19,14 +19,14 @@ class Block {
     }
 
     // Calculating Hash for Block -> using hashes of all transactions inside that block
-    calculateHash(transactions) {
+    calculateHash() {
         let hashNumber = "";
         for (let i = 0; i < this.transactions.length; i++) {
-            hashNumber += JSON.stringify(transactions[i].hash);
+            hashNumber += JSON.stringify(this.transactions[i].hash);
         }
         hashNumber += this.nonce;
 
-        return SHA256(hashNumber).toString();
+        this.hash =  SHA256(hashNumber).toString();
     }
 
     addTransaction(data){
