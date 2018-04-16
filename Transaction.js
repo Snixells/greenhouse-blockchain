@@ -4,10 +4,18 @@ const SHA256 = require('crypto-js/sha256');
 
 class Transaction {
 
-    constructor(data) {
+    constructor(data, timestamp, hash) {
+        // if (this.timestamp === "")
+        if(timestamp == "")
+            this.timestamp = this.getDate();
+        else
+            this.timestamp = timestamp;
+
+        if (hash == "")
+            this.hash = this.calculateHash();
+        else
+            this.hash = hash;
         this.data = data;
-        this.timestamp = this.getDate();
-        this.hash = this.calculateHash();
         console.log(this.hash);
     }
 

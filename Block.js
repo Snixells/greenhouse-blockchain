@@ -10,13 +10,12 @@ class Block {
         this.transactions = [];
         this.previousHash = previousHash;
         this.hash = '';
-        this.nonce = 0;
     }
 
     // Calculating Hash for Transaction
-    calculateHashTransaction(transaction) {
-        return SHA256(transaction.timestamp + JSON.stringify(transaction.data)).toString();
-    }
+    // calculateHashTransaction(transaction) {
+    //     return SHA256(transaction.timestamp + JSON.stringify(transaction.data)).toString();
+    // }
 
     // Calculating Hash for Block -> using hashes of all transactions inside that block
     calculateHash() {
@@ -24,13 +23,11 @@ class Block {
         for (let i = 0; i < this.transactions.length; i++) {
             hashNumber += JSON.stringify(this.transactions[i].hash);
         }
-        hashNumber += this.nonce;
-
-        this.hash =  SHA256(hashNumber).toString();
+        this.hash = SHA256(hashNumber).toString();
     }
 
-    addTransaction(data){
-        this.transactions.push(new Transaction(data));
+    addTransaction(data, timestamp, hash){
+        this.transactions.push(new Transaction(data, timestamp, hash));
     }
 
     getDate() {
