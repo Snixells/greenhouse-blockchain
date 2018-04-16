@@ -1,7 +1,6 @@
 const express = require('express');
 const request = require('request');
 const router = express.Router();
-const NodeCouchDb = require('node-couchdb');
 const bodyParser = require('body-parser');
 const path = require('path');
 
@@ -14,9 +13,9 @@ router.get('/', (req, res, next) => {
 
     const options = {
         url: url,
-        // headers: {
-        //     'Authorization' : process.env.DB_AUTHORIZATION
-        // }
+        headers: {
+            'Authorization' : process.env.DB_AUTHORIZATION
+        }
     };
 
     function callback(error, response, body) {

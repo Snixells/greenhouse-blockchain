@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-const NodeCouchDb = require('node-couchdb');
 const bodyParser = require('body-parser');
 
 require('dotenv').config();
