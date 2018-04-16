@@ -8,28 +8,15 @@ const path = require('path');
 const Transaction = require('../../Transaction');
 const Block = require('../../Block');
 
-// Database Configuration
-const baseUrl = 'http://localhost:5984/';
-const dbChainName = 'chain/';
-const dbUnconfirmedName = "unconfirmed";
-const viewFullUnconfirmed = "_design/unconfirmedFull/_view/unc";
-const viewFullChainUrl = '_design/chain/_view/full_chain';
-
-const user = 'Snixells';
-const password = '5%QO8qSPyXq6#OQF90z*@'
-
-
-
-
 // Get the whole chain 
 router.get('/', (req, res, next) => {
-    url = baseUrl + dbChainName + viewFullChainUrl;
+    url = process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN;
 
     const options = {
         url: url,
-        headers: {
-            'Authorization' : 'Basic U25peGVsbHM6NSVRTzhxU1B5WHE2I09RRjkweio='
-        }
+        // headers: {
+        //     'Authorization' : process.env.DB_AUTHORIZATION
+        // }
     };
 
     function callback(error, response, body) {
@@ -51,35 +38,35 @@ router.get('/test', (req, res, next) => {
 
 // Create new Block consisting of ../unconfirmed Transaction
 router.post('/newBlock', (req, res, next) => {
-    couch.get(dbUnconfirmedName, viewFullUnconfirmed).then(({ data, headers, status }) => {
+    // couch.get(dbUnconfirmedName, viewFullUnconfirmed).then(({ data, headers, status }) => {
 
-        let unconfirmedTransactionsJs = [];
-        let unconfirmedTransactionDBIDs = [];
-        let unconfirmedTransactionDBRevs = [];
-        let newBlock = new Block("abc");
+    //     let unconfirmedTransactionsJs = [];
+    //     let unconfirmedTransactionDBIDs = [];
+    //     let unconfirmedTransactionDBRevs = [];
+    //     let newBlock = new Block("abc");
 
-        for (let i = 0; i < data.total_rows; i++) {
+    //     for (let i = 0; i < data.total_rows; i++) {
 
-            unconfirmedTransactionsJs.push(data.rows[i].value);
-            // unconfirmedTransactionDBIDs.push(data.)
-        }
-        unconfirmedTransactionsJs.forEach(transaction => {
-            newBlock.addTransaction(transaction.data, transaction.timestamp, transaction.hash);
-        });
-        newBlock.calculateHash();
+    //         unconfirmedTransactionsJs.push(data.rows[i].value);
+    //         // unconfirmedTransactionDBIDs.push(data.)
+    //     }
+    //     unconfirmedTransactionsJs.forEach(transaction => {
+    //         newBlock.addTransaction(transaction.data, transaction.timestamp, transaction.hash);
+    //     });
+    //     newBlock.calculateHash();
 
-        couch.insert(dbChainName, newBlock)
-            .then(({ data, headers, status }) => {
-                console.log("Data " + data);
-                console.log("Status: " + status);
-            }, err => {
-                console.log("error " + err)
-            })
+        // couch.insert(dbChainName, newBlock)
+        //     .then(({ data, headers, status }) => {
+        //         console.log("Data " + data);
+        //         console.log("Status: " + status);
+        //     }, err => {
+        //         console.log("error " + err)
+        //     })
 
-        res.status(200).json({
-            message: "Successfull!"
-        })
-    })
+        // res.status(200).json({
+        //     message: "Successfull!"
+        // })
+    // })
 })
 
 module.exports = router;

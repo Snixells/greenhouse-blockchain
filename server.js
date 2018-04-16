@@ -3,6 +3,8 @@ const app = express();
 const NodeCouchDb = require('node-couchdb');
 const bodyParser = require('body-parser');
 
+require('dotenv').config();
+
 
 const chainRoutes = require('./api/routes/chain_route');
 const unconfirmedRoutes = require('./api/routes/unconfirmed_route');
