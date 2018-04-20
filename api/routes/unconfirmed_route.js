@@ -52,23 +52,31 @@ router.get('/validate', (req, res, next) => {
 })
 
 router.post('/newTransaction', (req, res, next) => {
+    // Creating the new transaction
     const transaction = new Transaction({
         "data": "data"
     }, "", "")
 
     options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED;
 
-    // Adding Transaction
-    options.url += '-d \' {"name":"Jane"}\'';
+    // Request options
+    // options.url += '-d \' {"name":"Jane"}\'';
+    // options.url += JSON.stringify('{"name":"Jane"}');
     options.method = 'POST';
+    console.log("JSON : "  + options.json);
     options.headers.Referer = process.env.DB_HOST;
     // options.headers["Content-Type"] = 'multipart/form-data';
+    options.headers["Content-Type"] = 'application/json';
+    // options.headers["json"] = JSON.stringify(transaction);
+    options.write(JSON.stringify(transaction));
     
     
 
     function callback(error, response, body) {
+        // Reponse Options
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
+        console.log(options.url);
     }
 
     request(options, callback);
