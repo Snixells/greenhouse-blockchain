@@ -7,23 +7,25 @@ const path = require('path');
 const Transaction = require('../../Transaction');
 const Block = require('../../Block');
 
+const options = {
+    url: 'url',
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'GET'
+}
+
 // Get the whole chain 
 router.get('/', (req, res, next) => {
     url = process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN;
 
-    const options = {
-        url: url,
-        headers: {
-            'Authorization' : process.env.DB_AUTHORIZATION
-        }
-    };
+    options.url = url;
 
     function callback(error, response, body) {
         // res.status(200).json(body);
-        console.log(url);
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
-        console.log(body);
     }
 
     request(options, callback);
@@ -66,6 +68,65 @@ router.post('/newBlock', (req, res, next) => {
         //     message: "Successfull!"
         // })
     // })
+
+    
+
+    // Outer request -> getting the unconfirmed Transactions
+    options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED;
+    options.method = 'GET';
+
+    // Request options
+
+    const opts = {
+        url: process.env.DB_HOST + process.env.DB_CHAIN, 
+        headers: {
+            'Authorization': process.env.DB_AUTHORIZATION,
+            'Content-Type': 'application/json'
+        },
+        method: 'POST'
+    }
+
+
+    function callback(error,response, body){
+        let unconfirmedTransansactions = [];
+        let newBlock = new Block('ahc');
+        // res.setHeader('Content-Type', 'application/json');
+
+        // const transaction = new Transaction({
+        //     "lotsofdata": "data"
+        // }, "", "")
+
+
+        jsonResponse = JSON.parse(body);
+
+        for (let i = 0; i < jsonResponse.total_rows; i++) {
+            let transactionJson = jsonResponse.rows[i].value;
+            newBlock.addTransaction(transactionJson.data, transactionJson.timestamp, transactionJson.hash);
+        }
+        console.log(newBlock);
+
+
+        newBlock.calculateHash();
+
+        opts.body = JSON.stringify(newBlock);
+        request(opts, innerCallback);
+
+        // res.send(body);
+    }
+
+    function innerCallback(error, response, body) {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(response);
+    }
+
+
+
+
+
+
+    request(options, callback);
+
+
 })
 
 module.exports = router;

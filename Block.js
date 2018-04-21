@@ -12,11 +12,6 @@ class Block {
         this.hash = '';
     }
 
-    // Calculating Hash for Transaction
-    // calculateHashTransaction(transaction) {
-    //     return SHA256(transaction.timestamp + JSON.stringify(transaction.data)).toString();
-    // }
-
     // Calculating Hash for Block -> using hashes of all transactions inside that block
     calculateHash() {
         let hashNumber = "";
