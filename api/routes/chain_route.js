@@ -39,37 +39,6 @@ router.get('/test', (req, res, next) => {
 
 // Create new Block consisting of ../unconfirmed Transaction
 router.post('/newBlock', (req, res, next) => {
-    // couch.get(dbUnconfirmedName, viewFullUnconfirmed).then(({ data, headers, status }) => {
-
-    //     let unconfirmedTransactionsJs = [];
-    //     let unconfirmedTransactionDBIDs = [];
-    //     let unconfirmedTransactionDBRevs = [];
-    //     let newBlock = new Block("abc");
-
-    //     for (let i = 0; i < data.total_rows; i++) {
-
-    //         unconfirmedTransactionsJs.push(data.rows[i].value);
-    //         // unconfirmedTransactionDBIDs.push(data.)
-    //     }
-    //     unconfirmedTransactionsJs.forEach(transaction => {
-    //         newBlock.addTransaction(transaction.data, transaction.timestamp, transaction.hash);
-    //     });
-    //     newBlock.calculateHash();
-
-        // couch.insert(dbChainName, newBlock)
-        //     .then(({ data, headers, status }) => {
-        //         console.log("Data " + data);
-        //         console.log("Status: " + status);
-        //     }, err => {
-        //         console.log("error " + err)
-        //     })
-
-        // res.status(200).json({
-        //     message: "Successfull!"
-        // })
-    // })
-
-    
 
     // Outer request -> getting the unconfirmed Transactions
     options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED;
@@ -78,7 +47,7 @@ router.post('/newBlock', (req, res, next) => {
     // Request options
 
     const opts = {
-        url: process.env.DB_HOST + process.env.DB_CHAIN, 
+        url: process.env.DB_HOST + process.env.DB_CHAIN,
         headers: {
             'Authorization': process.env.DB_AUTHORIZATION,
             'Content-Type': 'application/json'
@@ -90,12 +59,6 @@ router.post('/newBlock', (req, res, next) => {
     function callback(error,response, body){
         let unconfirmedTransansactions = [];
         let newBlock = new Block('ahc');
-        // res.setHeader('Content-Type', 'application/json');
-
-        // const transaction = new Transaction({
-        //     "lotsofdata": "data"
-        // }, "", "")
-
 
         jsonResponse = JSON.parse(body);
 
@@ -103,28 +66,59 @@ router.post('/newBlock', (req, res, next) => {
             let transactionJson = jsonResponse.rows[i].value;
             newBlock.addTransaction(transactionJson.data, transactionJson.timestamp, transactionJson.hash);
         }
-        console.log(newBlock);
 
 
         newBlock.calculateHash();
 
+        console.log(newBlock);
+
         opts.body = JSON.stringify(newBlock);
         request(opts, innerCallback);
-
-        // res.send(body);
     }
 
     function innerCallback(error, response, body) {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(response);
+        // res.setHeader('Content-Type', 'application/json');
+        // res.send(response);
     }
 
+    request(options, callback); 
+
+    // Now deleting all the unconfirmed transactions which are beeing published to the chain (as a block)
+
+    // Outer Function gets the rev's and id's from the transactions
+
+    options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + "_all_docs";
+    options.method = 'GET';
 
 
+    function getAllDocsCallback(error, response, body) {
 
+        allDocsJson = JSON.parse(body);
 
+        opts.method = 'DELETE';
 
-    request(options, callback);
+        for (let i = 0; i < allDocsJson.total_rows; i++) {
+            if (allDocsJson.rows[i].key === process.env.DB_VIEW_KEY_FULL_UNCONFIRMED) {
+                continue
+            } else {    
+                opts.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + allDocsJson.rows[i].id + '?rev=' + allDocsJson.rows[i].value.rev;
+                console.log(opts.url);
+                request(opts, deleteAllDocs);
+            }
+        }
+
+        res.send({
+            "message": "Published Blocks to chain and deleted unconfirmed Transactions!"
+        })
+
+    }
+
+    function deleteAllDocs(error, response, body) {
+
+        console.log(body);
+    }
+
+    request(options, getAllDocsCallback)
 
 
 })
