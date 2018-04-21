@@ -7,11 +7,11 @@ const Transaction = require('../../Transaction');
 const options = {
     url: 'url',
     headers: {
-        'Authorization' : process.env.DB_AUTHORIZATION,
+        'Authorization': process.env.DB_AUTHORIZATION,
         'Referer': '',
         'Content-Type': ''
     },
-    method : 'GET' 
+    method: 'GET'
 };
 
 // const couch = new NodeCouchDb({
@@ -32,7 +32,7 @@ router.get('/', (req, res, next) => {
     // })
 
     options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED;
-    
+
     function callback(error, response, body) {
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
@@ -45,7 +45,7 @@ router.get('/', (req, res, next) => {
 router.get('/validate', (req, res, next) => {
     couch.get(dbUnconfirmedName, viewFullUnconfirmed).then(({ data, headers, status }) => {
         let unconfirmedTransactions = [];
-        for(let i = 0; i < data.total_rows; i++){
+        for (let i = 0; i < data.total_rows; i++) {
             unconfirmedTransactions.push(data.rows[i].value);
         }
     })
@@ -63,14 +63,14 @@ router.post('/newTransaction', (req, res, next) => {
     // options.url += '-d \' {"name":"Jane"}\'';
     // options.url += JSON.stringify('{"name":"Jane"}');
     options.method = 'POST';
-    console.log("JSON : "  + options.json);
+    console.log("JSON : " + options.json);
     options.headers.Referer = process.env.DB_HOST;
     // options.headers["Content-Type"] = 'multipart/form-data';
     options.headers["Content-Type"] = 'application/json';
     // options.headers["json"] = JSON.stringify(transaction);
-    options.write(JSON.stringify(transaction));
-    
-    
+    options.body = JSON.stringify(transaction);
+
+
 
     function callback(error, response, body) {
         // Reponse Options
@@ -83,12 +83,12 @@ router.post('/newTransaction', (req, res, next) => {
 
 
     // couch.insert(dbUnconfirmedName, transaction)
-        // .then(({ data, headers, status }) => {
-        //     console.log("Data: " + data);
-        //     console.log("Status: " + status)
-        // }, err => {
-        //     console.log(err);
-        // })
+    // .then(({ data, headers, status }) => {
+    //     console.log("Data: " + data);
+    //     console.log("Status: " + status)
+    // }, err => {
+    //     console.log(err);
+    // })
 
     // res.send(JSON.stringify(transaction));
 
