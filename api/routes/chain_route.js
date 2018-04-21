@@ -1,12 +1,10 @@
 const express = require('express');
 const request = require('request');
 const router = express.Router();
-const bodyParser = require('body-parser');
-const path = require('path');
 
-const Transaction = require('../../Transaction');
 const Block = require('../../Block');
 
+// HTTP Request options 
 const options = {
     url: 'url',
     headers: {
@@ -23,7 +21,6 @@ router.get('/', (req, res, next) => {
     options.url = url;
 
     function callback(error, response, body) {
-        // res.status(200).json(body);
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
     }
@@ -31,10 +28,6 @@ router.get('/', (req, res, next) => {
     request(options, callback);
 
 });
-
-router.get('/test', (req, res, next) => {
-    couch.get()
-})
 
 
 // Create new Block consisting of ../unconfirmed Transaction
@@ -56,41 +49,40 @@ router.post('/newBlock', (req, res, next) => {
     }
 
 
-    function callback(error,response, body){
+    function getUnconfirmedTransactionsCallback(error,response, body){
         let unconfirmedTransansactions = [];
         let newBlock = new Block('ahc');
 
         jsonResponse = JSON.parse(body);
 
+        // Adding all transactions to newBlock
         for (let i = 0; i < jsonResponse.total_rows; i++) {
             let transactionJson = jsonResponse.rows[i].value;
             newBlock.addTransaction(transactionJson.data, transactionJson.timestamp, transactionJson.hash);
         }
 
-
+        // Calculating newBLock hash
         newBlock.calculateHash();
 
-        console.log(newBlock);
-
+        // Adding block to http body (to post it to chain)
         opts.body = JSON.stringify(newBlock);
-        request(opts, innerCallback);
+
+        // Calling http request function to publish block
+        request(opts, postBlockToChainCallback);
     }
 
-    function innerCallback(error, response, body) {
-        // res.setHeader('Content-Type', 'application/json');
-        // res.send(response);
+    // POSTing Block to new doc on chain
+    function postBlockToChainCallback(error, response, body) {
     }
 
-    request(options, callback); 
+    request(options, getUnconfirmedTransactionsCallback); 
 
     // Now deleting all the unconfirmed transactions which are beeing published to the chain (as a block)
-
-    // Outer Function gets the rev's and id's from the transactions
 
     options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + "_all_docs";
     options.method = 'GET';
 
-
+    // Outer Function gets the rev's and id's from the transactions
     function getAllDocsCallback(error, response, body) {
 
         allDocsJson = JSON.parse(body);
@@ -110,11 +102,9 @@ router.post('/newBlock', (req, res, next) => {
         res.send({
             "message": "Published Blocks to chain and deleted unconfirmed Transactions!"
         })
-
     }
 
     function deleteAllDocs(error, response, body) {
-
         console.log(body);
     }
 
