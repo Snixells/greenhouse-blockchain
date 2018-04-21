@@ -36,24 +36,26 @@ router.get('/validate', (req, res, next) => {
 })
 
 router.post('/newTransaction', (req, res, next) => {
-    // Creating the new transaction
-    const transaction = new Transaction({
-        "lotsofdata": "data"
-    }, "", "")
 
-    options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED;
+        // Creating the new transaction
+        const transaction = new Transaction({
+            "lotsofdata": "data",
+            "randomnumber": Math.random()
+        }, "", "")
 
-    // Request options
-    options.method = 'POST';
-    options.body = JSON.stringify(transaction);
+        options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED;
 
-    function callback(error, response, body) {
-        // Reponse Options
-        res.setHeader('Content-Type', 'application/json');
-        res.send(body);
-    }
+        // Request options
+        options.method = 'POST';
+        options.body = JSON.stringify(transaction);
 
-    request(options, callback);
+        function callback(error, response, body) {
+            // Reponse Options
+            res.setHeader('Content-Type', 'application/json');
+            res.send(body);
+        }
+
+        request(options, callback);
 })
 
 router.post('/validate', (req, res, next) => {
