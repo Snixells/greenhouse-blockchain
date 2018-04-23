@@ -14,40 +14,68 @@ const options = {
     method: 'GET'
 }
 
+const optionsGetChainView = {
+    url: process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN, 
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'GET'
+}
+
+const optionsGetUnconfirmedView = {
+    url: process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED, 
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'GET'
+}
+
+const optionsPOSTNewBlock = {
+    url: process.env.DB_HOST + process.env.DB_CHAIN,
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'POST'
+}
+
+const optionsDeleteUnconfirmed = {
+    url: 'url',
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'DELETE'
+}
+
+const optionsGetUnconfirmedAllDocs = {
+    url: process.env.DB_HOST + process.env.DB_UNCONFIRMED + "_all_docs",
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'GET'
+}
+
+const optionsPOSTNewTransaction = {
+
+}
 // Get the whole chain 
 router.get('/', (req, res, next) => {
-    url = process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN;
-
-    options.url = url;
 
     function callback(error, response, body) {
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
     }
 
-    request(options, callback);
-
+    request(optionsGetChainView, callback);
 });
 
 
 // Create new Block consisting of ../unconfirmed Transaction
 router.post('/newBlock', (req, res, next) => {
-
-    // Outer request -> getting the unconfirmed Transactions
-    options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED;
-    options.method = 'GET';
-
-    // Request options
-
-    const opts = {
-        url: process.env.DB_HOST + process.env.DB_CHAIN,
-        headers: {
-            'Authorization': process.env.DB_AUTHORIZATION,
-            'Content-Type': 'application/json'
-        },
-        method: 'POST'
-    }
-
 
     function getUnconfirmedTransactionsCallback(error, response, body) {
         let unconfirmedTransansactions = [];
@@ -67,10 +95,10 @@ router.post('/newBlock', (req, res, next) => {
                 newBlock.calculateHash();
 
                 // Adding block to http body (to post it to chain)
-                opts.body = JSON.stringify(newBlock);
+                optionsPOSTNewBlock.body = JSON.stringify(newBlock);
 
                 // Calling http request function to publish block
-                request(opts, postBlockToChainCallback);
+                request(optionsPOSTNewBlock, postBlockToChainCallback);
             }
         } else {
             res.send({
@@ -84,25 +112,12 @@ router.post('/newBlock', (req, res, next) => {
         console.log("Block to DB: " + body);
     }
 
-    request(options, getUnconfirmedTransactionsCallback);
+    request(optionsGetUnconfirmedView, getUnconfirmedTransactionsCallback);
 
     // Now deleting all the unconfirmed transactions which are beeing published to the chain (as a block)
 
-    options.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + "_all_docs";
-    options.method = 'GET';
-
     // Outer Function gets the rev's and id's from the transactions
     function getAllDocsCallback(error, response, body) {
-
-        const optionsDeleteUnconfirmed = {
-            url: 'url',
-            headers: {
-                'Authorization': process.env.DB_AUTHORIZATION,
-                'Content-Type': 'application/json'
-            },
-            method: 'DELETE'
-        }
-        console.log(error)
 
         allDocsJson = JSON.parse(body);
 
@@ -119,7 +134,6 @@ router.post('/newBlock', (req, res, next) => {
                     request(optionsDeleteUnconfirmed, deleteAllDocs);
                 }
             }
-
         if (transactions >= 1) {
             res.send({
                 "message": "Published Blocks to chain and deleted unconfirmed Transactions!"
@@ -129,10 +143,6 @@ router.post('/newBlock', (req, res, next) => {
                 "message": "No unconfirmed transactions"
             })
         }
-
-
-
-
     }
 
     function deleteAllDocs(error, response, body) {
@@ -140,7 +150,7 @@ router.post('/newBlock', (req, res, next) => {
     }
 
     console.log("135 " + options.method + " " + options.url)
-    request(options, getAllDocsCallback)
+    request(optionsGetUnconfirmedAllDocs, getAllDocsCallback)
 
 
 })
