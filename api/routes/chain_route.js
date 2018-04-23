@@ -59,18 +59,16 @@ const optionsGetUnconfirmedAllDocs = {
     method: 'GET'
 }
 
-const optionsPOSTNewTransaction = {
 
-}
 // Get the whole chain 
 router.get('/', (req, res, next) => {
 
-    function callback(error, response, body) {
+    function sendBodyCallback(error, response, body){
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
     }
 
-    request(optionsGetChainView, callback);
+    request(optionsGetChainView, sendBodyCallback);
 });
 
 
@@ -131,7 +129,7 @@ router.post('/newBlock', (req, res, next) => {
                     optionsDeleteUnconfirmed.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + allDocsJson.rows[i].id + '?rev=' + allDocsJson.rows[i].value.rev;
                     console.log("109 " + optionsDeleteUnconfirmed.url);
                     console.log("114 " + optionsDeleteUnconfirmed.method + " " + optionsDeleteUnconfirmed.url)
-                    request(optionsDeleteUnconfirmed, deleteAllDocs);
+                    request(optionsDeleteUnconfirmed, deleteAllDocsCallback);
                 }
             }
         if (transactions >= 1) {
@@ -145,7 +143,7 @@ router.post('/newBlock', (req, res, next) => {
         }
     }
 
-    function deleteAllDocs(error, response, body) {
+    function deleteAllDocsCallback(error, response, body) {
         console.log(body);
     }
 
