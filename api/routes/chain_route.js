@@ -15,7 +15,7 @@ const options = {
 }
 
 const optionsGetChainView = {
-    url: process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN, 
+    url: process.env.DB_HOST + process.env.DB_CHAIN + process.env.DB_VIEW_FULL_CHAIN,
     headers: {
         'Authorization': process.env.DB_AUTHORIZATION,
         'Content-Type': 'application/json'
@@ -24,7 +24,7 @@ const optionsGetChainView = {
 }
 
 const optionsGetUnconfirmedView = {
-    url: process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED, 
+    url: process.env.DB_HOST + process.env.DB_UNCONFIRMED + process.env.DB_VIEW_FULL_UNCONFIRMED,
     headers: {
         'Authorization': process.env.DB_AUTHORIZATION,
         'Content-Type': 'application/json'
@@ -59,11 +59,34 @@ const optionsGetUnconfirmedAllDocs = {
     method: 'GET'
 }
 
+const optionsGetLatestBlockChain = {
+    url: process.env.DB_HOST + process.env.DB_CHAIN + "_find",
+    headers: {
+        'Authorization': process.env.DB_AUTHORIZATION,
+        'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    json: true, 
+    body: {
+        "selector": {
+            "timestamp": {
+                "$gt": "2018"
+            }
+        },
+        "fields": [
+            "timestamp",
+            "hash"
+        ],
+        "limit": 1,
+        "sort": [{ "timestamp": "desc" }]
+    }
+}
+
 
 // Get the whole chain 
 router.get('/', (req, res, next) => {
 
-    function sendBodyCallback(error, response, body){
+    function sendBodyCallback(error, response, body) {
         res.setHeader('Content-Type', 'application/json');
         res.send(body);
     }
@@ -79,30 +102,39 @@ router.post('/newBlock', (req, res, next) => {
         let unconfirmedTransansactions = [];
         let newBlock = new Block('ahc');
 
-        jsonResponse = JSON.parse(body);
+        jsonResponseTransactions = JSON.parse(body);
 
-        if (jsonResponse.total_rows >= 0) {
-            // Adding all transactions to newBlock
-            for (let i = 0; i < jsonResponse.total_rows; i++) {
-                let transactionJson = jsonResponse.rows[i].value;
-                newBlock.addTransaction(transactionJson.data, transactionJson.timestamp, transactionJson.hash);
+        // Getting prevBlockHash
+        function getPrevBlockHashCallback(hashErr, hashResponse, hashBody) {
+            console.log(hashBody.docs[0].hash);
+            if (jsonResponseTransactions.total_rows >= 0) {
+                // Adding all transactions to newBlock
+                for (let i = 0; i < jsonResponseTransactions.total_rows; i++) {
+                    let transactionJson = jsonResponseTransactions.rows[i].value;
+                    newBlock.addTransaction(transactionJson.data, transactionJson.timestamp, transactionJson.hash);
+                }
+
+                if (newBlock.transactions.length > 1) {
+                    // Calculating newBLock hash
+                    newBlock.calculateHash();
+
+                    // Adding prevBlock Hash to new Block
+                    newBlock.previousHash = hashBody.docs[0].hash
+
+                    // Adding block to http body (to post it to chain)
+                    optionsPOSTNewBlock.body = JSON.stringify(newBlock);
+
+                    // Calling http request function to publish block
+                    request(optionsPOSTNewBlock, postBlockToChainCallback);
+                }
+            } else {
+                res.send({
+                    "message": "No unconfirmed Transactions"
+                })
             }
 
-            if (newBlock.transactions.length > 1) {
-                // Calculating newBLock hash
-                newBlock.calculateHash();
-
-                // Adding block to http body (to post it to chain)
-                optionsPOSTNewBlock.body = JSON.stringify(newBlock);
-
-                // Calling http request function to publish block
-                request(optionsPOSTNewBlock, postBlockToChainCallback);
-            }
-        } else {
-            res.send({
-                "message": "No unconfirmed Transactions"
-            })
         }
+        request(optionsGetLatestBlockChain, getPrevBlockHashCallback)
     }
 
     // POSTing Block to new doc on chain
@@ -115,23 +147,23 @@ router.post('/newBlock', (req, res, next) => {
     // Now deleting all the unconfirmed transactions which are beeing published to the chain (as a block)
 
     // Outer Function gets the rev's and id's from the transactions
-    function getAllDocsCallback(error, response, body) {
+    function getAllDocsUnconfirmedCallback(error, response, body) {
 
-        allDocsJson = JSON.parse(body);
+        allDocsUnconfirmedJson = JSON.parse(body);
 
         let transactions = 0;
 
-            for (let i = 0; i < allDocsJson.total_rows; i++) {
-                if (allDocsJson.rows[i].key === process.env.DB_VIEW_KEY_FULL_UNCONFIRMED) {
-                    continue
-                } else {
-                    transactions++;
-                    optionsDeleteUnconfirmed.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + allDocsJson.rows[i].id + '?rev=' + allDocsJson.rows[i].value.rev;
-                    console.log("109 " + optionsDeleteUnconfirmed.url);
-                    console.log("114 " + optionsDeleteUnconfirmed.method + " " + optionsDeleteUnconfirmed.url)
-                    request(optionsDeleteUnconfirmed, deleteAllDocsCallback);
-                }
+        for (let i = 0; i < allDocsUnconfirmedJson.total_rows; i++) {
+            if (allDocsUnconfirmedJson.rows[i].key === process.env.DB_VIEW_KEY_FULL_UNCONFIRMED) {
+                continue
+            } else {
+                transactions++;
+                optionsDeleteUnconfirmed.url = process.env.DB_HOST + process.env.DB_UNCONFIRMED + allDocsUnconfirmedJson.rows[i].id + '?rev=' + allDocsUnconfirmedJson.rows[i].value.rev;
+                console.log("109 " + optionsDeleteUnconfirmed.url);
+                console.log("114 " + optionsDeleteUnconfirmed.method + " " + optionsDeleteUnconfirmed.url)
+                request(optionsDeleteUnconfirmed, deleteAllDocsCallback);
             }
+        }
         if (transactions >= 1) {
             res.send({
                 "message": "Published Blocks to chain and deleted unconfirmed Transactions!"
@@ -148,7 +180,7 @@ router.post('/newBlock', (req, res, next) => {
     }
 
     console.log("135 " + options.method + " " + options.url)
-    request(optionsGetUnconfirmedAllDocs, getAllDocsCallback)
+    request(optionsGetUnconfirmedAllDocs, getAllDocsUnconfirmedCallback)
 
 
 })

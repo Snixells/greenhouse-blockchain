@@ -10,6 +10,7 @@ class Block {
         this.transactions = [];
         this.previousHash = previousHash;
         this.hash = '';
+        this.type = ''
     }
 
     // Calculating Hash for Block -> using hashes of all transactions inside that block
